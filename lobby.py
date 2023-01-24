@@ -13,10 +13,10 @@ class Lobby:
     factions: set[Faction] = ()
     expected_num_players: int = 0
 
-    def __init__(self, players, territories, factions):
+    def __init__(self, players, territories, landless_factions):
         self.players = players
         self.territories = territories
-        self.factions = set(factions + [territory.owner for territory in territories])
+        self.factions = set(landless_factions + [territory.owner for territory in territories])
 
     @property
     def open_factions(self):

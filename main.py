@@ -16,7 +16,7 @@ def main():
     lobby = Lobby(
         players=[],
         territories=territories,
-        factions = [church]
+        landless_factions= [church]
     )
     lobby.setup_menu()
     lobby.wait_for_players()
