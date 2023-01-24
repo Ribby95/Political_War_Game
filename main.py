@@ -1,98 +1,28 @@
-import random
-# This is a sample Python script.
+from game_world import Faction, Territory
+from lobby import Lobby
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+def main():
+    nobles=Faction("Nobles", color="red")
+    merchants = Faction("Merchants", color="Brown")
+    church = Faction("Church", color="Blue")
+    king = Faction("King", color="purple")
 
-
-
-class GameWorld():
-
-    def __init__(self):
-        self.num_players = 0
-        self.faction_list = ["Nobles", "Merchants", "Church", "King"]
-        self.player_list = []
-        self.territory_list = []
-
-        self.faction_starting_territories = {
-            "Nobles": ["Fairfax", "Loudoun"],
-            "Merchants": ["Richmond City"],
-            "Church": [],
-            "King": ["Washington DC"]
-
-        }
-
-        self.turn_count = 0
-        self.show_menu()
-        self.make_lobby()
+    territories = [
+        Territory("Richmond City", merchants),
+        Territory("Washington DC", king)
+    ] + [Territory(x, nobles) for x in ("Fairfax", "Loudoun")]
 
 
-    def getPlayers(self):
-        #print(self.player_list)
-        return self.player_list
-
-    def getTerritories(self):
-        return self.territory_list
-
-    def setPlayers(self,num):
-        if type(num) == int and 1 <= num <= 4:
-            self.num_players = num
-        else:
-           # print("Invalid number of players")
-            return False
-
-    def show_menu(self):
-        players = ""
-        while self.setPlayers(players) == False:
-            players = int(input("Enter number of players (1-4): "))
-            self.setPlayers(players)
-
-
-    class Territory():
-        def __init__(self, name):
-            self.name = name
-
-        def getTerritoryName(self):
-            # print(self.player_list)
-            return self.name
-
-    class Player():
-        def __init__(self, name="N/A", color="", faction=""):
-            self.name = name
-            self.color = color
-            self.faction = faction
-            self.assets = {
-                "Territories": [],
-                "Gold": 1000,
-                "Armies": []
-
-            }
-
-    def make_lobby(self):
-        prep = True
-        while prep:
-            player_names = []
-            for i in range(1, self.num_players + 1):
-                name = input(f"Enter player {i} name: ")
-                player_names.append(name)
-
-            faction_temp = self.faction_list
-            for name in player_names:
-                faction = random.choice(faction_temp)
-                print(f"{name} is: {faction}")
-                faction_temp.remove(faction)
-
-                new_player = self.Player(name=name, faction=faction)
-                new_player.assets["Territories"] = self.faction_starting_territories[faction]
-                self.player_list.append(new_player)
-            prep = False
-
-    def combat_simulator(self, army_list):
-        pass
-
-# Press the green button in the gutter to run the script.
+    lobby = Lobby(
+        players=[],
+        territories=territories,
+        factions = [church]
+    )
+    lobby.setup_menu()
+    lobby.wait_for_players()
+    world1 = lobby.start_game()
 
 if __name__ == '__main__':
-    world1 = GameWorld()
+    main()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
