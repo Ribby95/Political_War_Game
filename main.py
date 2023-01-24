@@ -71,18 +71,18 @@ class GameWorld():
     def make_lobby(self):
         prep = True
         while prep:
-
+            player_names = []
             for i in range(1, self.num_players + 1):
-                player = input(f"Enter player {i} name: ")
-                self.player_list.append(player)
+                name = input(f"Enter player {i} name: ")
+                player_names.append(player)
 
             faction_temp = self.faction_list
-            for player in self.player_list:
+            for name in player_names:
                 faction = random.choice(faction_temp)
-                print(f"{player} is: {faction}")
+                print(f"{name} is: {faction}")
                 faction_temp.remove(faction)
 
-                new_player = self.Player(name=player, faction=faction)
+                new_player = self.Player(name=name, faction=faction)
                 new_player.assets["Territories"] = self.faction_starting_territories[faction]
                 self.player_list.append(new_player)
             prep = False
