@@ -22,6 +22,7 @@ def main():
     lobby.wait_for_players()
     world1 = lobby.start_game()
 
+
 if __name__ == '__main__':
     main()
 
