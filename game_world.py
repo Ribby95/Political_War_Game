@@ -12,6 +12,15 @@ class Territory:
     name: str
     owner: Faction
 
+
+@dataclass
+class Map:
+    default_territory = Territory("Plains", None)
+
+    territories: list[Territory]
+    width: int
+    height: int
+
 @dataclass
 class Player:
     name: str = "N/A"
@@ -32,7 +41,7 @@ class Player:
 class GameWorld:
     factions: list[Faction]
     players: list[Player]
-    territories: list[Territory]
+    map: Map
 
     def combat_simulator(self, army_list):
         pass
