@@ -20,11 +20,3 @@ class Army:
                 Army.UNIT_POWER_CAVALRY  * self.composition['Cavalry'] + \
                 Army.UNIT_POWER_ARTILLERY * self.composition["Artillery"]
         return power
-    '''
-    #Inner class of Army
-    class Unit():
-        def __init__(self, name="N/A", color="", faction=""):
-            self.name = name
-            self.color = color
-            self.faction = faction
-    '''
