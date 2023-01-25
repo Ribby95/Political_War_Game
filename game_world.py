@@ -7,10 +7,12 @@ class Faction:
     name: str
     color: str  # TODO replace with a more appropriate type
 
+
 @dataclass
 class Territory:
     name: str
     owner: Optional[Faction]
+
 
 @dataclass
 class Map:
@@ -19,6 +21,7 @@ class Map:
     territories: list[Territory]
     width: int
     height: int
+
 
 @dataclass
 class Player:
@@ -35,6 +38,7 @@ class Player:
             "Gold": 1000,
             "Armies": []
         }
+
 
 @dataclass
 class GameWorld:
