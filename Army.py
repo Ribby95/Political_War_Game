@@ -4,7 +4,7 @@ class Army:
     UNIT_POWER_CAVALRY = 0.2
     UNIT_POWER_ARTILLERY = 0.3
 
-    def __init__(self, powerValue=0, color="", faction=""):
+    def __init__(self, powerValue=0, color="", faction=None):
 
         self.composition = {
             'Infantry': 0,
