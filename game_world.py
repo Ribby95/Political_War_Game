@@ -10,8 +10,7 @@ class Faction:
 @dataclass
 class Territory:
     name: str
-    owner: Faction
-
+    owner: Optional[Faction]
 
 @dataclass
 class Map:
