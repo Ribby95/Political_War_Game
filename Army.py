@@ -1,10 +1,5 @@
 
-class Army():
-    # want these to be global constants (maybe only to Army class), but not sure about the best way to do it
-    global UNIT_POWER_INFANTRY
-    global UNIT_POWER_CAVALRY
-    global UNIT_POWER_ARTILLERY
-
+class Army:
     UNIT_POWER_INFANTRY = 0.1
     UNIT_POWER_CAVALRY = 0.2
     UNIT_POWER_ARTILLERY = 0.3
@@ -19,11 +14,11 @@ class Army():
 
         self.color = color
         self.faction = faction
-        self.power_value = self.calculatePower()
 
     def calculatePower(self):
-        power = UNIT_POWER_INFANTRY * self.composition['Infantry'] + UNIT_POWER_CAVALRY \
-                * self.composition['Cavalry'] + UNIT_POWER_ARTILLERY * self.composition["Artillery"]
+        power = Army.UNIT_POWER_INFANTRY * self.composition['Infantry'] + \
+                Army.UNIT_POWER_CAVALRY  * self.composition['Cavalry'] + \
+                Army.UNIT_POWER_ARTILLERY * self.composition["Artillery"]
         return power
     '''
     #Inner class of Army
