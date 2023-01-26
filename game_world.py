@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 
 @dataclass(frozen=True)
@@ -18,7 +18,7 @@ class Territory:
 class Map:
     default_territory = Territory("Plains", None)
 
-    territories: list[Territory]
+    territories: List[Territory]
     width: int
     height: int
 
@@ -42,8 +42,8 @@ class Player:
 
 @dataclass
 class GameWorld:
-    factions: list[Faction]
-    players: list[Player]
+    factions: List[Faction]
+    players: List[Player]
     map: Map
 
     def combat_simulator(self, army_list):
