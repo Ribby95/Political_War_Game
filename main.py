@@ -20,6 +20,8 @@ def main():
     )
     lobby.setup_menu()
     lobby.wait_for_players()
+
+    print(lobby.factions)
     world1 = lobby.start_game()
 
 
