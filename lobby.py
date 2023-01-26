@@ -3,14 +3,15 @@ from game_world import Territory, Faction, Player
 import random
 from logging import debug
 import logging
+from typing import List, Set
 
 logging.basicConfig(level=logging.DEBUG)
 
 @dataclass
 class Lobby:
-    players: list[Player] = ()
-    territories: list[Territory] = ()
-    factions: set[Faction] = ()
+    players: List[Player] = ()
+    territories: List[Territory] = ()
+    factions: Set[Faction] = ()
     expected_num_players: int = 0
 
     def __init__(self, players, territories, landless_factions):
