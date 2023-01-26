@@ -17,7 +17,8 @@ class Lobby:
     def __init__(self, players, territories, landless_factions):
         self.players = players
         self.territories = territories
-        self.factions = set(landless_factions + [territory.owner for territory in territories])
+        factions_with_land = set(territory.owner for territory in territories)
+        self.factions = set(landless_factions) + factions_with_land
 
     @property
     def open_factions(self):
