@@ -24,13 +24,17 @@ class Server:
         self.message_history = []
         self.sessions = []
         self.inbox = Queue()
+        self.tasks = set()
 
     async def start(self):
-        await asyncio.start_server(
+        # have to get a strong reference to the task so it's not garbage collected
+        server_task = asyncio.start_server(
             client_connected_cb=self.handle_client,
             host=self.host,
             port=self.port
         )
+        self.tasks.add(server_task)
+        await server_task
 
     async def handle_client(self, client_reader, client_writer):
         new_session = Session(
@@ -67,12 +71,13 @@ class Server:
                 session.message_queue.put(message)
 
 
-def main():
+async def main():
     info("started")
     server = Server(host="localhost", port=1337)
-    asyncio.run(server.start())
+    await server.start()
+    await server.broadcast()
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    main()
+    asyncio.run(main())
