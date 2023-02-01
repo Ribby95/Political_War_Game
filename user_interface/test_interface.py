@@ -1,8 +1,8 @@
 import logging
 import asyncio
 from argparse import  ArgumentParser
-from queue import Queue
 from sys import stdout
+import aioconsole
 
 from logging import debug, info
 from netcode.client import Client
@@ -20,10 +20,9 @@ async def client_loop(client, output=stdout):
 async def main(host, port: int):
     debug("got here")
     client = await Client.connect(host, port)
-    client_loop_task = asyncio.create_task(client_loop(client, stdout))
-
+    asyncio.create_task(client_loop(client, stdout))
     while True:
-        message = input(">")
+        message = await aioconsole.ainput(">")
         info(f"sending message {message!r}")
         await client.send(message.encode())
 
