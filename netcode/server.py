@@ -39,10 +39,11 @@ class Server:
             port=self.port
         )
 
-        debug(f"listening on {self.host}:{self.port}")
-        self.tasks.add(server_task)
         debug("awaiting server task now")
         await server_task
+        while True:
+            await asyncio.sleep(10)
+
 
     async def handle_client(self, client_reader, client_writer):
         debug("handle client initialized")
