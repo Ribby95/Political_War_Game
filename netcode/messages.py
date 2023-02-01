@@ -1,6 +1,8 @@
 from logging import debug
 import struct
 import pickle
+from dataclasses import dataclass
+from typing import Optional
 
 async def deserialize(reader):
     debug("reading")
@@ -20,3 +22,17 @@ async def serialize(writer, message):
     await writer.drain()
     debug("write done")
 
+
+@dataclass
+class Message:
+    sender_id: Optional[int]
+
+
+@dataclass
+class Chat(Message):
+    text: str
+
+
+@dataclass
+class SetUsername(Message):
+    username: str
