@@ -6,7 +6,6 @@ import socket
 from logging import info, debug
 from queue import Queue
 from dataclasses import dataclass
-import pickle
 
 from netcode import messages
 
