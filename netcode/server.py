@@ -1,21 +1,17 @@
 import asyncio
 import logging
 import random
+import typing
 
 from logging import info, debug
 from dataclasses import dataclass
 
-from netcode import messages
-
+from netcode.client import Client
 
 @dataclass(frozen=False)
 class Session:
     id: int
-    reader: asyncio.StreamReader
-    writer: asyncio.StreamWriter
-
-    async def send(self, message):
-        await messages.serialize(self.writer, message)
+    client: Client
 
 
 class Server:
@@ -54,8 +50,7 @@ class Server:
         debug("handle client initialized")
         new_session = Session(
             id=next(self.id_pool),  # todo add collision avoidance
-            reader=client_reader,
-            writer=client_writer
+            client=Client(writer=client_writer, reader=client_reader)
         )
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
         await self.catch_up(new_session)
@@ -63,17 +58,17 @@ class Server:
 
     async def catch_up(self, new_session: Session):
         for message in self.message_history:
-            await new_session.send(message)
+            await new_session.client.send(message)
 
     async def forward_messages(self, client_session: Session):
         while True:
             debug(f"receive loop {client_session.id} waiting on message from reader")
-            message = await messages.deserialize(client_session.reader)
-            reply = f"message from {client_session.id}: "+ message.decode()
+            message = await client_session.client.receive()
+            reply = f"message from {client_session.id}: " + message
             self.message_history.append(reply)
             debug("broadcasting")
             await asyncio.gather(
-                *(session.send(reply) for session in self.sessions)
+                *(session.client.send(reply) for session in self.sessions)
             )
             debug("done broadcasting")
 
