@@ -26,28 +26,18 @@ class Server:
         self.sessions = []
         self.inbox = Queue()
         self.tasks = set()
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind((self.host, self.port))
-        self.sock.setblocking(False)
 
     def close(self):
         debug("socket closing")
-        self.sock.shutdown(socket.SHUT_RDWR)
-        self.sock.close()
-        debug(f"socket should be closed")
+
 
     async def start(self):
-        # set up broadcast loop
-        self.tasks.add(asyncio.create_task(self.broadcast()))
-
-        # WARN for some reason the port doesn't open unless I initialize the socket separately
-        self.sock.listen(10)
-
         # have to get a strong reference to the task so it's not garbage collected
-        server_task = asyncio.create_task(asyncio.start_server(
+        server_task = asyncio.start_server(
             client_connected_cb=self.handle_client,
-            sock=self.sock
-        ))
+            host=self.host,
+            port=self.port
+        )
 
         debug(f"listening on {self.host}:{self.port}")
         self.tasks.add(server_task)
