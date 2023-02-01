@@ -61,9 +61,10 @@ class Server:
         while True:
             debug(f"receive loop {client_session.id} waiting on message from reader")
             message = await messages.deserialize(client_session.reader)
+            reply = f"message from {client_session.id}: "+ message.decode()
             debug("broadcasting")
             await asyncio.gather(
-                *(messages.serialize(session.writer, message) for session in self.sessions)
+                *(messages.serialize(session.writer, reply.encode()) for session in self.sessions)
             )
             debug("done broadcasting")
 
