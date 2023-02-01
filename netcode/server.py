@@ -2,10 +2,11 @@ import asyncio
 import logging
 import random
 
-from logging import info, debug
+from logging import debug
 from dataclasses import dataclass
 
 from netcode.client import Client
+
 
 @dataclass
 class Session:
@@ -28,22 +29,17 @@ class Server:
         self.message_history = []
         self.sessions = []
 
-    def close(self):
-        debug("socket closing")
-
     async def start(self):
-        # have to get a strong reference to the task so it's not garbage collected
-        server_task = asyncio.start_server(
+        # sets up callback, returns immediately
+        await asyncio.start_server(
             client_connected_cb=self.handle_client,
             host=self.host,
             port=self.port
         )
 
-        debug("awaiting server task now")
-        await server_task
+        # give handle_client time to run
         while True:
             await asyncio.sleep(10)
-
 
     async def handle_client(self, client_reader, client_writer):
         debug("handle client initialized")
