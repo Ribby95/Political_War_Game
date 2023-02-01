@@ -5,7 +5,6 @@ import pickle
 
 from netcode import messages
 
-
 class Client:
 
     @staticmethod
@@ -33,4 +32,3 @@ class Client:
             message = await self.receive()
             debug(f"got message {message}")
             output.put(message)
-
