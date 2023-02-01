@@ -59,11 +59,6 @@ class Server:
                 self.get_messages(client_reader, client_id=new_session.id)
             )
         )
-        self.tasks.add(
-            asyncio.create_task(
-                self.send_messages(client_writer, client_queue=new_session.message_queue)
-            )
-        )
 
     async def get_messages(self, client_reader, client_id):
         debug("receive loop initialized")
@@ -73,13 +68,6 @@ class Server:
             message.id = client_id  # todo check if a user tries spoofing ids and spank em
             for session in self.sessions:
                 session.message_queue.put(message)
-
-    @staticmethod
-    async def send_messages(client_writer, client_queue):
-        debug("send loop initialized")
-        while True:
-            message = await client_queue.get()
-            await messages.serialize(client_writer, message)
 
 async def main():
     debug("main started")
