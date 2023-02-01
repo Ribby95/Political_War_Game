@@ -1,6 +1,5 @@
 import asyncio
 from logging import debug
-from queue import Queue
 import pickle
 
 from netcode import messages
@@ -27,9 +26,9 @@ class Client:
         debug("receiveing message")
         return await messages.deserialize(self.reader)
 
-    async def wait_for_messages(self, output: Queue):
+    async def wait_for_messages(self):
         while True:
             debug("waiting on message from server")
             message = await self.receive()
             debug(f"got message {message}")
-            output.put(message)
+            yield message
