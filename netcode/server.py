@@ -14,6 +14,9 @@ class Session:
     reader: asyncio.StreamReader
     writer: asyncio.StreamWriter
 
+    async def send(self, message):
+        await messages.serialize(self.writer, message)
+
 
 class Server:
     PACKET_SIZE = 2048
@@ -64,7 +67,7 @@ class Server:
             reply = f"message from {client_session.id}: "+ message.decode()
             debug("broadcasting")
             await asyncio.gather(
-                *(messages.serialize(session.writer, reply.encode()) for session in self.sessions)
+                *(session.send(reply) for session in self.sessions)
             )
             debug("done broadcasting")
 
