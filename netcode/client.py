@@ -3,11 +3,11 @@ from asyncio import StreamWriter, StreamReader, open_connection
 
 from netcode import messages
 
+
 class Client:
 
-
     @staticmethod
-    async def connect(host,port):
+    async def connect(host, port):
         debug("connecting")
         (reader, writer) = await open_connection(host, port)
         debug("connected")
@@ -21,6 +21,6 @@ class Client:
         debug(f"sending {message!r}")
         await messages.serialize(self.writer, message)
 
-    async def receive(self):
-        debug("receiveing message")
+    async def receive(self) -> messages.Message:
+        debug("receiving message")
         return await messages.deserialize(self.reader)

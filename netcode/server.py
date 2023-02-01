@@ -63,21 +63,21 @@ class Server:
         while True:
             debug(f"receive loop {client_session.id} waiting on message from reader")
             message = await client_session.client.receive()
-            reply = f"message from {client_session.id}: " + message
-            self.message_history.append(reply)
+            message.sender_id = client_session.id  # todo check for spoofers and spank em
+            self.message_history.append(message)
             debug("broadcasting")
-            await asyncio.gather(
-                *(session.client.send(reply) for session in self.sessions)
-            )
+            await self.broadcast(message)
             debug("done broadcasting")
 
+    def broadcast(self, message):
+        return asyncio.gather(
+            *(session.client.send(message) for session in self.sessions)
+        )
 
 async def main():
     server = Server(host="localhost", port=1337)
-    try:
-        await server.start()
-    finally:
-        server.close()
+    await server.start()
+
 
 if __name__ == '__main__':
     logging.basicConfig(
