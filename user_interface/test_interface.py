@@ -11,9 +11,10 @@ from netcode.server import Server
 
 async def client_loop(client, output=stdout):
     debug("started client loop")
-    async for message in client.wait_for_messages():
-        debug("waiting on message")
+    while True:
+        message = await client.receive()
         print(message, file=output)
+        debug("flushing output")
         output.flush()
 
 

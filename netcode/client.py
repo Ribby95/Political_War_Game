@@ -25,10 +25,3 @@ class Client:
     async def receive(self):
         debug("receiveing message")
         return await messages.deserialize(self.reader)
-
-    async def wait_for_messages(self):
-        while True:
-            debug("waiting on message from server")
-            message = await self.receive()
-            debug(f"got message {message}")
-            yield message
