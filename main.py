@@ -24,6 +24,7 @@ def main():
     print(lobby.factions)
     world1 = lobby.start_game()
 
+
 if __name__ == '__main__':
     main()
 

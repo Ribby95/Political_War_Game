@@ -7,7 +7,6 @@ from dataclasses import dataclass
 
 from netcode.client import Client
 
-
 @dataclass
 class Session:
     id: int
@@ -28,6 +27,7 @@ class Server:
 
         self.message_history = []
         self.sessions = []
+
 
     async def start(self):
         # sets up callback, returns immediately
