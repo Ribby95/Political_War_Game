@@ -1,6 +1,5 @@
-import asyncio
 from logging import debug
-import pickle
+from asyncio import StreamWriter, StreamReader, open_connection
 
 from netcode import messages
 
@@ -10,11 +9,11 @@ class Client:
     @staticmethod
     async def connect(host,port):
         debug("connecting")
-        (reader, writer) = await asyncio.open_connection(host, port)
+        (reader, writer) = await open_connection(host, port)
         debug("connected")
         return Client(reader, writer)
 
-    def __init__(self, reader, writer):
+    def __init__(self, reader: StreamReader, writer: StreamWriter):
         self.reader = reader
         self.writer = writer
 

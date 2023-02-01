@@ -1,14 +1,13 @@
 import asyncio
 import logging
 import random
-import typing
 
 from logging import info, debug
 from dataclasses import dataclass
 
 from netcode.client import Client
 
-@dataclass(frozen=False)
+@dataclass
 class Session:
     id: int
     client: Client

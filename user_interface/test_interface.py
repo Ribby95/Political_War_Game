@@ -25,11 +25,11 @@ async def main(host, port: int):
     while True:
         message = await aioconsole.ainput(">")
         info(f"sending message {message!r}")
-        await client.send(message.encode())
+        await client.send(message)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     parser = ArgumentParser()
     parser.add_argument("host", default="localhost")
     parser.add_argument("port", type=int, default=Server.PORT)
