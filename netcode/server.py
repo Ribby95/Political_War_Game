@@ -2,6 +2,7 @@ import asyncio
 import logging
 import random
 import socket
+import queue
 
 from logging import info, debug
 from queue import Queue
@@ -51,7 +52,7 @@ class Server:
             message_queue=Queue()
         )
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
-        asyncio.gather(
+        await asyncio.gather(
             self.get_messages(client_reader, client_id=new_session.id),
             self.send_messages(client_writer, message_queue=new_session.message_queue)
         )
@@ -71,11 +72,11 @@ class Server:
         while True:
             debug("waiting on queue")
             try: 
-                message = session.message_queue.get(block=False)
+                message = message_queue.get(block=False)
                 debug("waiting to serialize")
                 await messages.serialize(client_writer, message)
             except queue.Empty:
-                await asyncio.sleep()
+                await asyncio.sleep(delay=0)
             debug("done")
 
 async def main():
