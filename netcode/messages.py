@@ -10,7 +10,7 @@ async def deserialize(reader):
 
 
 async def serialize(writer, message):
-    message = message.encode()
+    message = bytes(message)
     debug(f"writing {message!r} len {len(message)}")
     writer.write(struct.pack('<L', len(message)))
     writer.write(message)

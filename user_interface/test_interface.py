@@ -24,8 +24,8 @@ async def main(host, port: int):
 
     while True:
         message = input(">")
-        info("sending message")
-        await client.send(message)
+        info(f"sending message {message!r}")
+        await client.send(message.encode())
 
 
 if __name__ == '__main__':
