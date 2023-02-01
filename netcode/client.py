@@ -21,13 +21,11 @@ class Client:
 
     async def send(self, message):
         debug(f"sending {message!r}")
-        pickle.dump(message, self.writer)
-        await self.writer.drain()
+        await messages.serialize(self.writer, message)
 
     async def receive(self):
         debug("receiveing message")
-        message = pickle.load(await self.reader)
-        return message
+        return await messages.deserialize(self.reader)
 
     async def wait_for_messages(self, output: Queue):
         while True:

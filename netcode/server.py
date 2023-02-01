@@ -8,6 +8,8 @@ from queue import Queue
 from dataclasses import dataclass
 import pickle
 
+from netcode import messages
+
 
 @dataclass(frozen=False)
 class Session:
@@ -66,19 +68,18 @@ class Server:
     async def get_messages(self, client_reader, client_id):
         debug("receive loop initialized")
         while True:
-            message = await pickle.load(client_reader)
+            message = await messages.deserialize(client_reader)
             debug(f"got message {message!r}")
             message.id = client_id  # todo check if a user tries spoofing ids and spank em
             self.inbox.put(message)
             debug("put message in server inbox")
-            await asyncio.sleep(0.1)
 
     @staticmethod
     async def send_messages(client_writer, client_queue):
         debug("send loop initialized")
         while True:
             message = await client_queue.get()
-            pickle.dump(message, client_writer)
+            await messages.serialize(client_writer, message)
 
     async def broadcast(self):
         debug("broadcaster initialized")
