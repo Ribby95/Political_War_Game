@@ -6,7 +6,6 @@ import socket
 from logging import info, debug
 from queue import Queue
 from dataclasses import dataclass
-import pickle
 
 from netcode import messages
 
@@ -27,15 +26,9 @@ class Server:
 
         self.message_history = []
         self.sessions = []
-        self.tasks = set()
 
     def close(self):
         debug("socket closing")
-
-    def add_as_task(self, coro):
-        task = asyncio.create_task(coro)
-        self.tasks.add(task)
-        return task
 
     async def start(self):
         # have to get a strong reference to the task so it's not garbage collected
@@ -58,11 +51,10 @@ class Server:
             message_queue=Queue()
         )
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
-        task1=self.add_as_task(self.get_messages(client_reader, client_id=new_session.id))
-        task2=self.add_as_task(self.send_messages(client_writer, session=new_session))
-        await task1
-        await task2
-
+        asyncio.gather(
+            self.get_messages(client_reader, client_id=new_session.id),
+            self.send_messages(client_writer, message_queue=new_session.message_queue)
+        )
 
 
     async def get_messages(self, client_reader, client_id):
@@ -74,13 +66,16 @@ class Server:
                 session.message_queue.put(message)
             debug("done broadcasting")
 
-    async def send_messages(self, client_writer, session):
+    async def send_messages(self, client_writer, message_queue):
         debug("started")
         while True:
             debug("waiting on queue")
-            message = await session.message_queue.get()
-            debug("waiting to serialize")
-            await messages.serialize(client_writer, message)
+            try: 
+                message = session.message_queue.get(block=False)
+                debug("waiting to serialize")
+                await messages.serialize(client_writer, message)
+            except queue.Empty:
+                await asyncio.sleep()
             debug("done")
 
 async def main():
