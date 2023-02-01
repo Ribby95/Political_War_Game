@@ -58,13 +58,19 @@ class Server:
             writer=client_writer
         )
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
+        await self.catch_up(new_session)
         await self.forward_messages(new_session)
+
+    async def catch_up(self, new_session: Session):
+        for message in self.message_history:
+            await new_session.send(message)
 
     async def forward_messages(self, client_session: Session):
         while True:
             debug(f"receive loop {client_session.id} waiting on message from reader")
             message = await messages.deserialize(client_session.reader)
             reply = f"message from {client_session.id}: "+ message.decode()
+            self.message_history.append(reply)
             debug("broadcasting")
             await asyncio.gather(
                 *(session.send(reply) for session in self.sessions)
