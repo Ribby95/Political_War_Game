@@ -7,9 +7,12 @@ from netcode import messages
 
 class Client:
 
+
     @staticmethod
-    async def new(host, port):
+    async def connect(host,port):
+        debug("connecting")
         (reader, writer) = await asyncio.open_connection(host, port)
+        debug("connected")
         return Client(reader, writer)
 
     def __init__(self, reader, writer):

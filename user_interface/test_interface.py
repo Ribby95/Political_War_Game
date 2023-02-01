@@ -19,7 +19,7 @@ async def receive_worker(input: Queue, outfile):
 async def main(host, port: int):
     debug("got here")
     inbox = Queue()
-    client = await Client.new(host, port)
+    client = await Client.connect(host, port)
 
     task1 = asyncio.create_task(client.wait_for_messages(inbox))  # todo better names
     task2 = asyncio.create_task(receive_worker(inbox, stdout))
