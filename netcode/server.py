@@ -26,21 +26,29 @@ class Server:
         self.sessions = []
         self.inbox = Queue()
         self.tasks = set()
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.bind((self.host, self.port))
+        self.sock.setblocking(False)
+
+    def close(self):
+        debug("socket closing")
+        self.sock.shutdown(socket.SHUT_RDWR)
+        self.sock.close()
+        debug(f"socket should be closed")
 
     async def start(self):
         # set up broadcast loop
         self.tasks.add(asyncio.create_task(self.broadcast()))
 
         # WARN for some reason the port doesn't open unless I initialize the socket separately
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((self.host, self.port))
-        sock.listen()
+        self.sock.listen(10)
 
         # have to get a strong reference to the task so it's not garbage collected
-        server_task = asyncio.start_server(
+        server_task = asyncio.create_task(asyncio.start_server(
             client_connected_cb=self.handle_client,
-            sock=sock
-        )
+            sock=self.sock
+        ))
+
         debug(f"listening on {self.host}:{self.port}")
         self.tasks.add(server_task)
         debug("awaiting server task now")
@@ -53,13 +61,16 @@ class Server:
             message_queue=Queue()
         )
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
-        async with asyncio.TaskGroup() as user_tasks:
-            user_tasks.create_task(
+        self.tasks.add(
+            asyncio.create_task(
                 self.get_messages(client_reader, client_id=new_session.id)
             )
-            user_tasks.create_task(
+        )
+        self.tasks.add(
+            asyncio.create_task(
                 self.send_messages(client_writer, client_queue=new_session.message_queue)
             )
+        )
 
     async def get_messages(self, client_reader, client_id):
         debug("receive loop initialized")
@@ -69,6 +80,7 @@ class Server:
             message.id = client_id  # todo check if a user tries spoofing ids and spank em
             self.inbox.put(message)
             debug("put message in server inbox")
+            await asyncio.sleep(0.1)
 
     @staticmethod
     async def send_messages(client_writer, client_queue):
@@ -89,7 +101,10 @@ async def main():
     debug("main started")
     server = Server(host="localhost", port=1337)
     debug("awaiting server")
-    await server.start()
+    try:
+        await server.start()
+    finally:
+        server.close()
     debug("done")
 
 if __name__ == '__main__':
