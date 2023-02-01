@@ -24,9 +24,9 @@ class Server:
     def __init__(self, host, port=PORT):
         self.host = host
         self.port = port
+
         self.message_history = []
         self.sessions = []
-        self.inbox = Queue()
         self.tasks = set()
 
     def close(self):
@@ -71,8 +71,8 @@ class Server:
             message = await messages.deserialize(client_reader)
             debug(f"got message {message!r}")
             message.id = client_id  # todo check if a user tries spoofing ids and spank em
-            self.inbox.put(message)
-            debug("put message in server inbox")
+            for session in self.sessions:
+                session.message_queue.put(message)
 
     @staticmethod
     async def send_messages(client_writer, client_queue):
@@ -80,14 +80,6 @@ class Server:
         while True:
             message = await client_queue.get()
             await messages.serialize(client_writer, message)
-
-    async def broadcast(self):
-        debug("broadcaster initialized")
-        while True:
-            message = await self.inbox.get()
-            for session in self.sessions:
-                session.message_queue.put(message)
-
 
 async def main():
     debug("main started")
