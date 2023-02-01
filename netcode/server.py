@@ -27,15 +27,9 @@ class Server:
 
         self.message_history = []
         self.sessions = []
-        self.tasks = set()
 
     def close(self):
         debug("socket closing")
-
-    def add_as_task(self, coro):
-        task = asyncio.create_task(coro)
-        self.tasks.add(task)
-        return task
 
     async def start(self):
         # have to get a strong reference to the task so it's not garbage collected
@@ -58,11 +52,10 @@ class Server:
             message_queue=Queue()
         )
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
-        task1=self.add_as_task(self.get_messages(client_reader, client_id=new_session.id))
-        task2=self.add_as_task(self.send_messages(client_writer, session=new_session))
-        await task1
-        await task2
-
+        asyncio.gather(
+            self.get_messages(client_reader, client_id=new_session.id),
+            self.send_messages(client_writer, session=new_session)
+        )
 
 
     async def get_messages(self, client_reader, client_id):
