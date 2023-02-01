@@ -26,10 +26,13 @@ async def main(host, port: int):
     debug("got here")
     inbox = Queue()
     client = await Client.new(host, port)
-    async with asyncio.TaskGroup() as task_group:
-        task_group.create_task(client.wait_for_messages(inbox))
-        task_group.create_task(receive_worker(inbox, stdout))
-        task_group.create_task(send_input(client))
+
+    task1 = asyncio.create_task(client.wait_for_messages(inbox))  # todo better names
+    task2 = asyncio.create_task(receive_worker(inbox, stdout))
+    task3 = asyncio.create_task(send_input(client))
+    await task3
+    await task2
+    await task1
 
 
 if __name__ == '__main__':
