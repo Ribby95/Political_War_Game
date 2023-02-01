@@ -27,6 +27,9 @@ class Server:
         self.tasks = set()
 
     async def start(self):
+        # set up broadcast loop
+        self.tasks.add(asyncio.create_task(self.broadcast()))
+
         # have to get a strong reference to the task so it's not garbage collected
         server_task = asyncio.start_server(
             client_connected_cb=self.handle_client,
@@ -75,7 +78,6 @@ async def main():
     info("started")
     server = Server(host="localhost", port=1337)
     await server.start()
-    await server.broadcast()
 
 
 if __name__ == '__main__':
