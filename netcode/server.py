@@ -47,44 +47,48 @@ class Server:
     async def handle_client(self, client_reader, client_writer):
         debug("handle client initialized")
         new_session = Session(
-            id=0,  # todo add collision avoidance
+            id=random.randint(0, 2 ** 64),  # todo add collision avoidance
             message_queue=Queue()
         )
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
         asyncio.gather(
             self.get_messages(client_reader, client_id=new_session.id),
-            self.send_messages(client_writer, session=new_session)
+            self.send_messages(client_writer, message_queue=new_session.message_queue)
         )
 
 
     async def get_messages(self, client_reader, client_id):
+        debug("receive loop initialized")
         while True:
-            debug(f"receive loop {client_id} waiting on message from reader")
             message = await messages.deserialize(client_reader)
-            debug("broadcasting")
+            debug(f"got message {message!r}")
+            message.id = client_id  # todo check if a user tries spoofing ids and spank em
             for session in self.sessions:
                 session.message_queue.put(message)
             debug("done broadcasting")
 
-    async def send_messages(self, client_writer, session):
+    async def send_messages(self, client_writer, message_queue):
         debug("started")
         while True:
             debug("waiting on queue")
-            message = await session.message_queue.get()
-            debug("waiting to serialize")
-            await messages.serialize(client_writer, message)
+            try: 
+                message = session.message_queue.get(block=False)
+                debug("waiting to serialize")
+                await messages.serialize(client_writer, message)
+            except queue.Empty:
+                await asyncio.sleep()
             debug("done")
 
 async def main():
+    debug("main started")
     server = Server(host="localhost", port=1337)
+    debug("awaiting server")
     try:
         await server.start()
     finally:
         server.close()
+    debug("done")
 
 if __name__ == '__main__':
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(levelname)s %(module)s/%(funcName)s:%(lineno)d: %(message)s"
-    )
-    asyncio.run(main(), debug=True)
+    logging.basicConfig(level=logging.DEBUG)
+    asyncio.run(main())
