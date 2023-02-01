@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import random
-import socket
 import queue
 
 from logging import info, debug
