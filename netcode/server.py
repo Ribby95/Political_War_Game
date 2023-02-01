@@ -36,8 +36,6 @@ class Server:
             host=self.host,
             port=self.port
         )
-        self.tasks.add(server_task)
-        await server_task
 
         # give handle_client time to run
         while True:
