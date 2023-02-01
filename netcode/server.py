@@ -59,7 +59,7 @@ class Server:
             message = await messages.deserialize(client_session.reader)
             debug("broadcasting")
             await asyncio.gather(
-                messages.serialize(session.writer,message) for session in self.sessions
+                *(messages.serialize(session.writer, message) for session in self.sessions)
             )
             debug("done broadcasting")
 
