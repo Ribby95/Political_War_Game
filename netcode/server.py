@@ -23,6 +23,10 @@ class Server:
         self.host = host
         self.port = port
 
+        ids = list(range(1000))
+        random.shuffle(ids)
+        self.id_pool = iter(ids)
+
         self.message_history = []
         self.sessions = []
 
@@ -46,7 +50,7 @@ class Server:
     async def handle_client(self, client_reader, client_writer):
         debug("handle client initialized")
         new_session = Session(
-            id=0,  # todo add collision avoidance
+            id=next(self.id_pool),  # todo add collision avoidance
             reader=client_reader,
             writer=client_writer
         )
