@@ -16,12 +16,6 @@ async def receive_worker(input: Queue, outfile):
         debug("got message")
 
 
-async def send_input(client):
-    message = input(">")
-    info("sending message")
-    client.send(message)
-
-
 async def main(host, port: int):
     debug("got here")
     inbox = Queue()
@@ -29,10 +23,11 @@ async def main(host, port: int):
 
     task1 = asyncio.create_task(client.wait_for_messages(inbox))  # todo better names
     task2 = asyncio.create_task(receive_worker(inbox, stdout))
-    task3 = asyncio.create_task(send_input(client))
-    await task3
-    await task2
-    await task1
+
+    while True:
+        message = input(">")
+        info("sending message")
+        await client.send(message)
 
 
 if __name__ == '__main__':
