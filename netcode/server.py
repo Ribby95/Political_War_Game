@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+import socket
 
 from logging import info, debug
 from queue import Queue
@@ -30,11 +31,15 @@ class Server:
         # set up broadcast loop
         self.tasks.add(asyncio.create_task(self.broadcast()))
 
+        # WARN for some reason the port doesn't open unless I initialize the socket separately
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((self.host, self.port))
+        sock.listen()
+
         # have to get a strong reference to the task so it's not garbage collected
         server_task = asyncio.start_server(
             client_connected_cb=self.handle_client,
-            host=self.host,
-            port=self.port
+            sock=sock
         )
         self.tasks.add(server_task)
         await server_task
