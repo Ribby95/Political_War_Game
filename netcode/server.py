@@ -53,7 +53,7 @@ class Server:
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
         asyncio.gather(
             self.get_messages(client_reader, client_id=new_session.id),
-            self.send_messages(client_writer, session=new_session)
+            self.send_messages(client_writer, message_queue=new_session.message_queue)
         )
 
 
@@ -67,13 +67,16 @@ class Server:
                 session.message_queue.put(message)
             debug("done broadcasting")
 
-    async def send_messages(self, client_writer, session):
+    async def send_messages(self, client_writer, message_queue):
         debug("started")
         while True:
             debug("waiting on queue")
-            message = session.message_queue.get()
-            debug("waiting to serialize")
-            await messages.serialize(client_writer, message)
+            try: 
+                message = session.message_queue.get(block=False)
+                debug("waiting to serialize")
+                await messages.serialize(client_writer, message)
+            except queue.Empty:
+                await asyncio.sleep()
             debug("done")
 
 async def main():
