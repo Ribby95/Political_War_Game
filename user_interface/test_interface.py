@@ -9,20 +9,18 @@ from netcode.client import Client
 from netcode.server import Server
 
 
-async def receive_worker(input: Queue, outfile):
-    while True:
+async def client_loop(client, output=stdout):
+    debug("started client loop")
+    async for message in client.wait_for_messages():
         debug("waiting on message")
-        print(input.get(block=True),file=outfile)
-        debug("got message")
+        print(message, file=output)
+        output.flush()
 
 
 async def main(host, port: int):
     debug("got here")
-    inbox = Queue()
     client = await Client.connect(host, port)
-
-    task1 = asyncio.create_task(client.wait_for_messages(inbox))  # todo better names
-    task2 = asyncio.create_task(receive_worker(inbox, stdout))
+    client_loop_task = asyncio.create_task(client_loop(client, stdout))
 
     while True:
         message = input(">")

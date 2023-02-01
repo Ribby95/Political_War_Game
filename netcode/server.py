@@ -1,10 +1,8 @@
 import asyncio
 import logging
 import random
-import queue
 
 from logging import info, debug
-from queue import Queue
 from dataclasses import dataclass
 
 from netcode import messages
@@ -13,7 +11,8 @@ from netcode import messages
 @dataclass(frozen=False)
 class Session:
     id: int
-    message_queue: Queue = Queue()
+    reader: asyncio.StreamReader
+    writer: asyncio.StreamWriter
 
 
 class Server:
@@ -48,35 +47,22 @@ class Server:
         debug("handle client initialized")
         new_session = Session(
             id=0,  # todo add collision avoidance
-            message_queue=Queue()
+            reader=client_reader,
+            writer=client_writer
         )
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
-        await asyncio.gather(
-            self.get_messages(client_reader, client_id=new_session.id),
-            self.send_messages(client_writer, message_queue=new_session.message_queue)
-        )
+        await self.forward_messages(new_session)
 
-
-    async def get_messages(self, client_reader, client_id):
+    async def forward_messages(self, client_session: Session):
         while True:
-            debug(f"receive loop {client_id} waiting on message from reader")
-            message = await messages.deserialize(client_reader)
+            debug(f"receive loop {client_session.id} waiting on message from reader")
+            message = await messages.deserialize(client_session.reader)
             debug("broadcasting")
-            for session in self.sessions:
-                session.message_queue.put(message)
+            await asyncio.gather(
+                messages.serialize(session.writer,message) for session in self.sessions
+            )
             debug("done broadcasting")
 
-    async def send_messages(self, client_writer, message_queue):
-        debug("started")
-        while True:
-            debug("waiting on queue")
-            try: 
-                message = message_queue.get(block=False)
-                debug("waiting to serialize")
-                await messages.serialize(client_writer, message)
-            except queue.Empty:
-                await asyncio.sleep(delay=0)
-            debug("done")
 
 async def main():
     server = Server(host="localhost", port=1337)
