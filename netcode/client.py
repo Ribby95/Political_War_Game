@@ -24,7 +24,7 @@ class Client:
 
     async def receive(self):
         debug("receiveing message")
-        message = pickle.load(self.reader)
+        message = pickle.load(await self.reader)
         return message
 
     async def wait_for_messages(self, output: Queue):
