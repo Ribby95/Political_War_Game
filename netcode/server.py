@@ -41,10 +41,13 @@ class Server:
             client_connected_cb=self.handle_client,
             sock=sock
         )
+        debug(f"listening on {self.host}:{self.port}")
         self.tasks.add(server_task)
+        debug("awaiting server task now")
         await server_task
 
     async def handle_client(self, client_reader, client_writer):
+        debug("handle client initialized")
         new_session = Session(
             id=random.randint(0, 2 ** 64),  # todo add collision avoidance
             message_queue=Queue()
@@ -59,6 +62,7 @@ class Server:
             )
 
     async def get_messages(self, client_reader, client_id):
+        debug("receive loop initialized")
         while True:
             message = await pickle.load(client_reader)
             debug(f"got message {message!r}")
@@ -68,11 +72,13 @@ class Server:
 
     @staticmethod
     async def send_messages(client_writer, client_queue):
+        debug("send loop initialized")
         while True:
             message = await client_queue.get()
             pickle.dump(message, client_writer)
 
     async def broadcast(self):
+        debug("broadcaster initialized")
         while True:
             message = await self.inbox.get()
             for session in self.sessions:
@@ -80,10 +86,11 @@ class Server:
 
 
 async def main():
-    info("started")
+    debug("main started")
     server = Server(host="localhost", port=1337)
+    debug("awaiting server")
     await server.start()
-
+    debug("done")
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
