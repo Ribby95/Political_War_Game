@@ -3,6 +3,8 @@ import asyncio
 from argparse import ArgumentParser
 from sys import stdout
 from functools import singledispatchmethod
+from typing import Optional
+
 import aioconsole
 
 from logging import debug, info
@@ -18,10 +20,11 @@ async def client_loop(client, output=stdout):
         message = await client.receive()
         handler.handle(message)
 
+usernames=dict()
 
 class MessageHandler:
     def __init__(self, output=stdout):
-        self.usernames=dict()
+        self.usernames=usernames  # global
         self.output = output
 
     @singledispatchmethod
@@ -48,6 +51,11 @@ class MessageHandler:
         print(f"*{name} disconnected*")
 
 
+def loopup_id(lookup_name: str, usernames: dict) -> Optional[int]:
+    for (id, name) in usernames.items():
+        if name == lookup_name:
+            return id
+    return None
 
 def handle_input(input: str) -> messages.Message:
     match input.strip().split():
