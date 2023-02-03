@@ -66,7 +66,7 @@ def handle_input(input: str) -> messages.Message:
             if dropped is not None:
                 return messages.UserDisconnect(sender_id=Server.SENDER_ID, user_id=dropped)
             else:
-                messages.Chat(sender_id=None, text="I'm trying to hack (poorly)")
+                return messages.Chat(sender_id=None, text="I'm trying to hack (poorly)")
         case _:  # fallback to just sending input as a message
             return messages.Chat(
                 sender_id=None,
