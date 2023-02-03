@@ -38,25 +38,32 @@ class MessageHandler:
     def handle_username(self, message: messages.SetUsername):
         self.usernames[message.sender_id] = message.username
 
+    @handle.register
+    def handle_peer_disconnect(self, message: messages.UserDisconnect):
+        dropped = message.user_id
+        name = f"User {dropped}"
+        if dropped in self.usernames.keys():
+            name = self.usernames[dropped]
+            del self.usernames[dropped]
+        print(f"*{name} disconnected*")
 
-command_map ={
-    "/user": lambda arg: messages.SetUsername(sender_id=None, username=arg)
-}
 
-def handle_input(input: str):
-    input = input.strip()
-    if input.startswith("/"):
-        (command, args) = input.split(maxsplit=1)
-        if (action := command_map.get(command)) is not None:
-            return action(args)
-        else:
-            return None
-    else:
-        # fallthrough
-        return messages.Chat(
-            sender_id=None,
-            text=input
-        )
+
+def handle_input(input: str) -> messages.Message:
+    match input.strip().split():
+        case ["/user", *username]:
+            return messages.SetUsername(sender_id=None, username='_'.join(username))
+        case ["/kick", user]:  # I'm being sneaky
+            dropped = loopup_id(user, usernames)
+            if dropped is not None:
+                return messages.UserDisconnect(sender_id=Server.SENDER_ID, user_id=dropped)
+            else:
+                messages.Chat(sender_id=None, text="I'm trying to hack (poorly)")
+        case _:  # fallback to just sending input as a message
+            return messages.Chat(
+                sender_id=None,
+                text=input.strip(),
+            )
 
 async def main(host, port: int):
     debug("got here")
@@ -64,10 +71,8 @@ async def main(host, port: int):
     asyncio.create_task(client_loop(client, stdout))
     while True:
         command: str = await aioconsole.ainput("")
-        if (message := handle_input(command)) is not None:
-            await client.send(message)
-        else:
-            print("unrecognised command", command.split(maxsplit=1)[0])
+        message = handle_input(command)
+        await client.send(message)
 
 
 if __name__ == '__main__':
