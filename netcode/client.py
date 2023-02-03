@@ -25,3 +25,7 @@ class Client:
     async def receive(self) -> messages.Message:
         debug("receiving message")
         return await messages.deserialize(self.reader)
+
+    async def close(self):
+        self.writer.write_eof()
+        await self.writer.wait_closed()
