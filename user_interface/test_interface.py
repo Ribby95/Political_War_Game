@@ -20,11 +20,13 @@ async def client_loop(client, output=stdout):
         message = await client.receive()
         handler.handle(message)
 
-usernames=dict()
+
+usernames = dict()
+
 
 class MessageHandler:
     def __init__(self, output=stdout):
-        self.usernames=usernames  # global
+        self.usernames = usernames  # global
         self.output = output
 
     @singledispatchmethod
@@ -34,7 +36,7 @@ class MessageHandler:
     @handle.register
     def handle_chat(self, message: messages.Chat):
         name = self.usernames.get(message.sender_id, message.sender_id)
-        print(name,"> ", message.text, sep='', file=self.output)
+        print(name, "> ", message.text, sep='', file=self.output)
         self.output.flush()
 
     @handle.register
@@ -57,6 +59,7 @@ def loopup_id(lookup_name: str, usernames: dict) -> Optional[int]:
             return id
     return None
 
+
 def handle_input(input: str) -> messages.Message:
     match input.strip().split():
         case ["/user", *username]:
@@ -72,6 +75,7 @@ def handle_input(input: str) -> messages.Message:
                 sender_id=None,
                 text=input.strip(),
             )
+
 
 async def main(host, port: int):
     debug("got here")

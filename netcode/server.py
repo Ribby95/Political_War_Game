@@ -13,7 +13,6 @@ class Session:
     id: int
     client: Client
 
-
 class Server:
     PACKET_SIZE = 2048
     PORT = 1337
