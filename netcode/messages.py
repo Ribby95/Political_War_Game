@@ -36,3 +36,7 @@ class Chat(Message):
 @dataclass
 class SetUsername(Message):
     username: str
+
+@dataclass
+class UserDisconnect(Message):
+    user_id: int

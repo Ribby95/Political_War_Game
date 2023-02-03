@@ -2,10 +2,11 @@ import asyncio
 import logging
 import random
 
-from logging import debug
+from logging import debug, info, warning
 from dataclasses import dataclass
 
 from netcode.client import Client
+from netcode import messages
 
 @dataclass
 class Session:
@@ -16,12 +17,13 @@ class Session:
 class Server:
     PACKET_SIZE = 2048
     PORT = 1337
+    SENDER_ID=0
 
     def __init__(self, host, port=PORT):
         self.host = host
         self.port = port
 
-        ids = list(range(1000))
+        ids = list(range(Server.SENDER_ID + 1, 1000))
         random.shuffle(ids)
         self.id_pool = iter(ids)
 
@@ -47,9 +49,21 @@ class Server:
             id=next(self.id_pool),  # todo add collision avoidance
             client=Client(writer=client_writer, reader=client_reader)
         )
+        info(f"user {new_session.id} connected")
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
-        await self.catch_up(new_session)
-        await self.forward_messages(new_session)
+        try:
+            await self.catch_up(new_session)
+            await self.forward_messages(new_session)
+        finally:  # todo, handle closing the client somewhere
+            # at this point we cannot assume that the session's client is writable
+            # so we must remove it before broadcasting that they disconnected
+            self.sessions.remove(new_session)
+            disconnect_message = messages.UserDisconnect(
+                sender_id=Server.SENDER_ID,
+                user_id=new_session.id
+            )
+            await self.broadcast(disconnect_message)
+
 
     async def catch_up(self, new_session: Session):
         for message in self.message_history:
