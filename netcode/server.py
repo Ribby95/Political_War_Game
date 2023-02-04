@@ -52,6 +52,12 @@ class Server:
         self.sessions.append(new_session)  # todo make this not a race-condition waiting to happen
         try:
             await self.catch_up(new_session)
+            await new_session.client.send(
+                messages.YouAre(
+                    sender_id=self.SENDER_ID,
+                    user_id=new_session.id
+                )
+            )
             await self.forward_messages(new_session)
         finally:  # todo, handle closing the client somewhere
             # at this point we cannot assume that the session's client is writable

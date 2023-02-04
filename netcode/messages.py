@@ -40,3 +40,7 @@ class SetUsername(Message):
 @dataclass
 class UserDisconnect(Message):
     user_id: int
+
+@dataclass
+class YouAre(Message):
+    user_id: int
