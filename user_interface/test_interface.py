@@ -13,14 +13,6 @@ from netcode.server import Server
 from netcode import messages
 
 
-async def client_loop(client, output=stdout):
-    debug("started client loop")
-    handler = MessageHandler(output)
-    while True:
-        message = await client.receive()
-        handler.handle(message)
-
-
 usernames = dict()
 
 
@@ -53,6 +45,12 @@ class MessageHandler:
         print(f"*{name} disconnected*")
 
 
+async def client_loop(client, handler=MessageHandler(stdout)):
+    while True:
+        message = await client.receive()
+        handler.handle(message)
+
+
 def loopup_id(lookup_name: str, usernames: dict) -> Optional[int]:
     for (id, name) in usernames.items():
         if name == lookup_name:
@@ -80,7 +78,7 @@ def handle_input(input: str) -> messages.Message:
 async def main(host, port: int):
     debug("got here")
     client = await Client.connect(host, port)
-    asyncio.create_task(client_loop(client, stdout))
+    asyncio.create_task(client_loop(client, MessageHandler(stdout)))
     while True:
         command: str = await aioconsole.ainput("")
         message = handle_input(command)
